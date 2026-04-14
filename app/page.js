@@ -1,65 +1,117 @@
+"use client";
+
+import Image from "next/image";
 import Link from "next/link";
-import BlurText from "./components/reactbits";
+import { motion } from "framer-motion";
+import ProjectCard from "./components/ProjectCard";
+import SectionIntro from "./components/SectionIntro";
+import { profile, projects, timeline } from "./data/siteData";
+
+const riseIn = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0 }
+};
 
 export default function Home() {
   return (
     <>
-      <div className="flex gap-20 mt-20 flex-col md:flex-row justify-center items-center p-4">
-        {/* Image */}
-       <div className="relative w-60 h-60 md:w-[28rem] md:h-[28rem] m-6">
-  <div className="absolute inset-0 rounded-full bg-gray-200 blur-2xl opacity-60 scale-110 z-0"></div>
-  <img
-    className="relative z-10 h-full w-full cursor-pointer hover:scale-110 transition-transform duration-300 ease-in-out rounded-full object-cover "
-    src="MYself.jpg"
-    alt="profile"
-  />
-</div>
-        {/* Text Section */}
-        <div className="text-white p-4 max-w-xl text-center md:text-left">
-          {/* BlurText + Title */}
-          <BlurText
-            text="Hello, It's Me Dhiraj Birajdar And I'm"
-            delay={150}
-            animateBy="words"
-            direction="top"
-            className="text-3xl md:text-6xl"
-          />
-          <div className="text-3xl textcolors md:text-6xl typing-container text-blue-600 mt-2">
-            Web Developer
+      <section className="hero">
+        <motion.div
+          className="panel hero-content"
+          initial="hidden"
+          animate="visible"
+          variants={riseIn}
+          transition={{ duration: 0.55, ease: "easeOut" }}
+        >
+          <p className="eyebrow">Portfolio 2026</p>
+          <h1>
+            Crafting digital products that feel <span>alive</span>.
+          </h1>
+          <p className="lead">{profile.tagline}</p>
+
+          <div className="hero-actions">
+            <Link href="/projects" className="button button-primary">
+              Explore Projects
+            </Link>
+            <Link href="/contact" className="button button-secondary">
+              Let&apos;s Collaborate
+            </Link>
           </div>
 
-          {/* Paragraph */}
-          <p className="mt-6 text-sm md:text-base text-gray-300">
-            A frontend developer passionate about crafting clean, responsive, and interactive web experiences.
-            I specialize in technologies like Next.js, React, and Tailwind CSS, bringing modern designs to life with smooth animations and optimized performance.
-          </p>
-
-          {/* Social Icons */}
-          <div className="flex justify-center md:justify-start gap-15 mt-6">
-            <Link href="https://www.instagram.com/dhiraj_birajdar_77/">
-              <img
-                className="w-10 h-10 cursor-pointer hover:bg-amber-900 hover:invert rounded-full"
-                src="insta.svg"
-                alt="Instagram"
-              />
-            </Link>
-            <Link href="https://www.linkedin.com/in/dhiraj-birajdar-b920302aa/">
-              <img
-                className="w-10 h-10 cursor-pointer hover:bg-black hover:invert rounded-full"
-                src="Linkedin.svg"
-                alt="LinkedIn"
-              />
-            </Link>
-            <Link href="https://github.com/dashboard">
-              <img
-                className="w-10 h-10 cursor-pointer hover:bg-amber-900 hover:invert rounded-full"
-                src="githubg.svg"
-                alt="GitHub"
-              />
-            </Link>
+          <div className="stat-grid">
+            <div className="stat-item">
+              <strong>{profile.years}</strong>
+              <span>Years Building UI</span>
+            </div>
+            <div className="stat-item">
+              <strong>10+</strong>
+              <span>Deployed Interfaces</span>
+            </div>
+            <div className="stat-item">
+              <strong>{profile.location}</strong>
+              <span>Remote Collaboration</span>
+            </div>
           </div>
+        </motion.div>
+
+        <motion.aside
+          className="panel hero-visual"
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.55, ease: "easeOut", delay: 0.08 }}
+        >
+          <span className="orb orb-a" aria-hidden="true" />
+          <span className="orb orb-b" aria-hidden="true" />
+          <div className="avatar-wrap">
+            <Image
+              src="/MYself.jpg"
+              alt={`${profile.name} portrait`}
+              width={800}
+              height={1000}
+              className="avatar"
+              priority
+            />
+          </div>
+        </motion.aside>
+      </section>
+
+      <section className="section panel">
+        <SectionIntro
+          eyebrow="Narrative"
+          title="From ideas to product-grade frontend"
+          text="I focus on interfaces that are intentional: clear hierarchy, responsive behavior, strong performance, and motion that supports comprehension instead of distraction."
+        />
+
+        <div className="timeline">
+          {timeline.map((item, index) => (
+            <motion.article
+              key={item.title}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.25 }}
+              variants={riseIn}
+              transition={{ duration: 0.45, delay: index * 0.08 }}
+            >
+              <p className="eyebrow">{item.period}</p>
+              <h3>{item.title}</h3>
+              <p>{item.description}</p>
+            </motion.article>
+          ))}
         </div>
-      </div>
+      </section>
+
+      <section className="section panel">
+        <SectionIntro
+          eyebrow="Selected Work"
+          title="Projects that show craft and clarity"
+          text={profile.intro}
+        />
+        <div className="project-grid">
+          {projects.map((project) => (
+            <ProjectCard key={project.title} project={project} />
+          ))}
+        </div>
+      </section>
     </>
   );
 }

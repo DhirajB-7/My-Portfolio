@@ -1,106 +1,131 @@
-'use client';
+"use client";
 
-import { useForm } from 'react-hook-form';
-import { useState, useEffect } from 'react';
-import emailjs from '@emailjs/browser';
+import { useEffect, useMemo, useState } from "react";
+import emailjs from "@emailjs/browser";
+import { useForm } from "react-hook-form";
+import SectionIntro from "../components/SectionIntro";
+import { profile } from "../data/siteData";
 
-export default function ContactForm() {
-  const [status, setStatus] = useState('');
+const emailConfig = {
+  publicKey: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY,
+  serviceId: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
+  templateId: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID
+};
+
+export default function ContactPage() {
+  const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // React Hook Form setup
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors }
   } = useForm();
 
+  const canUseEmailJs = useMemo(
+    () => Object.values(emailConfig).every(Boolean),
+    []
+  );
+
   useEffect(() => {
-    emailjs.init('HQPp1WhavPJUtGM_S'); // Your public key
-  }, []);
+    if (canUseEmailJs) {
+      emailjs.init({ publicKey: emailConfig.publicKey });
+    }
+  }, [canUseEmailJs]);
 
   const onSubmit = (data) => {
+    if (!canUseEmailJs) {
+      setStatus("Email service is not configured yet. Add EmailJS environment variables.");
+      return;
+    }
+
     setLoading(true);
-    setStatus('');
+    setStatus("");
 
     emailjs
-      .send('service_4lmazps', 'template_a4rm7nk', data)
+      .send(emailConfig.serviceId, emailConfig.templateId, data)
       .then(() => {
-        setStatus('✅ Message sent!');
-        reset(); // Clear form
+        setStatus("Message sent successfully.");
+        reset();
       })
-      .catch((err) => {
-        console.error('EmailJS error:', err);
-        setStatus('❌ Failed to send message.');
+      .catch(() => {
+        setStatus("Something went wrong. Please email me directly.");
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   return (
-    <div className='flex h-[80vh] justify-center items-center'>
-      <form onSubmit={handleSubmit(onSubmit)} className="mx-auto space-y-4 p-10 rounded shadow w-full max-w-md">
-        {/* Name */}
-        <input
-          type="text"
-          placeholder="Your Name"
-          {...register('name', { required: 'Name is required' })}
-          className="w-full p-2 border rounded"
-        />
-        {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
+    <section className="section panel">
+      <SectionIntro
+        eyebrow="Contact"
+        title="Let&apos;s build something that people remember"
+        text="Share your idea, role, or project context. I will reply with a clear plan and timeline."
+      />
 
-        {/* Email */}
-        <input
-          type="email"
-          placeholder="Your Email"
-          {...register('email', {
-            required: 'Email is required',
-            pattern: {
-              value: /^\S+@\S+\.\S+$/,
-              message: 'Invalid email format',
-            },
-          })}
-          className="w-full p-2 border rounded"
-        />
-        {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
+      <div className="contact-grid">
+        <aside className="story-card">
+          <h3>Reach Out</h3>
+          <p>
+            I enjoy collaborating on products that value clean UX, speed, and thoughtful details.
+          </p>
+          <p>
+            Direct email: <a href={`mailto:${profile.email}`}>{profile.email}</a>
+          </p>
+          <p>
+            If EmailJS keys are missing, the form will not send and you can still contact me by email.
+          </p>
+        </aside>
 
-        {/* Contact Number */}
-        <input
-          type="tel"
-          placeholder="Your Phone Number"
-          maxLength={10}
-          {...register('contact', {
-            required: 'Phone number is required',
-            pattern: {
-              value: /^[0-9]{10}$/,
-              message: 'Phone number must be exactly 10 digits',
-            },
-          })}
-          className="w-full p-2 border rounded"
-        />
-        {errors.contact && <p className="text-red-500 text-sm">{errors.contact.message}</p>}
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <input
+            type="text"
+            placeholder="Your Name"
+            {...register("name", { required: "Name is required" })}
+          />
+          {errors.name ? <p className="error">{errors.name.message}</p> : null}
 
-        {/* Message */}
-        <textarea
-          placeholder="Your Message"
-          {...register('message', { required: 'Message is required' })}
-          className="w-full p-2 border rounded h-32"
-        />
-        {errors.message && <p className="text-red-500 text-sm">{errors.message.message}</p>}
+          <input
+            type="email"
+            placeholder="Your Email"
+            {...register("email", {
+              required: "Email is required",
+              pattern: {
+                value: /^\S+@\S+\.\S+$/,
+                message: "Invalid email format"
+              }
+            })}
+          />
+          {errors.email ? <p className="error">{errors.email.message}</p> : null}
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={loading}
-          className={`w-full bgcolor p-2 text-white rounded transition ${
-            loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-          }`}
-        >
-          {loading ? 'Sending...' : 'Send Message'}
-        </button>
+          <input
+            type="tel"
+            placeholder="Phone Number"
+            {...register("contact", {
+              pattern: {
+                value: /^[0-9]{10}$/,
+                message: "Phone number must be exactly 10 digits"
+              }
+            })}
+          />
+          {errors.contact ? <p className="error">{errors.contact.message}</p> : null}
 
-        {status && <p className="text-center text-sm mt-2">{status}</p>}
-      </form>
-    </div>
+          <textarea
+            placeholder="Tell me about your project"
+            rows={6}
+            {...register("message", { required: "Message is required" })}
+          />
+          {errors.message ? <p className="error">{errors.message.message}</p> : null}
+
+          <button type="submit" disabled={loading} className="button button-primary">
+            {loading ? "Sending..." : "Send Message"}
+          </button>
+
+          {status ? <p className="notice">{status}</p> : null}
+        </form>
+      </div>
+    </section>
   );
 }
