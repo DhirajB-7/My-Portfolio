@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 const STORAGE_KEY = "portfolio-theme";
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState("dark");
-
   useEffect(() => {
     const savedTheme = localStorage.getItem(STORAGE_KEY);
     const preferredTheme =
@@ -14,12 +12,13 @@ export default function ThemeToggle() {
       (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
 
     document.documentElement.setAttribute("data-theme", preferredTheme);
-    setTheme(preferredTheme);
   }, []);
 
   const toggleTheme = () => {
-    const nextTheme = theme === "dark" ? "light" : "dark";
-    setTheme(nextTheme);
+    const currentTheme =
+      document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+
+    const nextTheme = currentTheme === "dark" ? "light" : "dark";
     document.documentElement.setAttribute("data-theme", nextTheme);
     localStorage.setItem(STORAGE_KEY, nextTheme);
   };
@@ -32,7 +31,7 @@ export default function ThemeToggle() {
       aria-label="Toggle color theme"
       title="Toggle theme"
     >
-      <span>{theme === "dark" ? "Light" : "Dark"}</span>
+      <span>Theme</span>
     </button>
   );
 }
